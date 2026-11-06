@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import threading
+from pathlib import Path
 
 import pytest
 
@@ -102,6 +103,33 @@ def test_borrow_records_lease_and_status(tmp_path):
     assert view["until_ms"] == 1000 + 30 * 60000
     assert view["overdue"] is False
     assert view["state"] == "HELD"
+
+
+def test_a_worktree_checkout_leases_and_releases(tmp_path):
+    """A linked git worktree can be leased and put back. The main checkout stays."""
+    host = tmp_path / "host"
+    home, other = make_host(host)
+    linked = tmp_path / "linked"
+    git(host, "worktree", "add", "--detach", str(linked), home)
+    assert (linked / ".git").is_file()
+    now, clock = clock_at(1000)
+    store = new_store(tmp_path, linked, clock)
+    lease_id = store.borrow(
+        host="box",
+        commit=other,
+        duration_ms=1000,
+        why="worktree",
+        borrower="ada",
+    )
+    assert git(linked, "rev-parse", "HEAD") == other
+    assert git(host, "rev-parse", "HEAD") == home
+    store.release(lease_id, borrower="ada")
+    assert git(linked, "rev-parse", "HEAD") == home
+    assert git(host, "rev-parse", "HEAD") == home
+    assert store.status()["state"] == "FREE"
+    root = Path(__file__).resolve().parents[1]
+    assert "A checkout can be a git worktree." in (root / "README.md").read_text()
+    assert "A checkout may be a linked git worktree." in (root / "SPEC.md").read_text()
 
 
 def test_release_restores_home_and_tells_next(tmp_path):

@@ -104,7 +104,7 @@ The agents argued it out before it was built. A lost connection does not prove t
 
 ## What it doesn't do
 
-Pinlease lends one checkout from one settings file. It doesn't run your tests, change any other lock on the machine, or put the checkout back on a timer: only a release does that. It never stashes, resets or cleans a dirty checkout. It uses Unix file locks, so it doesn't run on Windows.
+Pinlease lends one checkout from one settings file. It doesn't run your tests, change any other lock on the machine, or put the checkout back on a timer: only a release does that. It never stashes, resets or cleans a dirty checkout. It uses Unix file locks, so it doesn't run on Windows. A checkout can be a git worktree. Pinlease moves that worktree only.
 
 <details>
 <summary><b>For developers: the full details</b></summary>
