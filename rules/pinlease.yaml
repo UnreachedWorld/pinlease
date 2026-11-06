@@ -1,0 +1,12 @@
+# Numbers for Pinlease. The tool reads these. It does not keep its own copies.
+version: "0.1.0"
+schema_version: 1
+minute_ms: 60000
+second_ms: 1000
+hour_ms: 3600000
+wait_poll_ms: 50
+secret_markers:
+  - PLANTED-SECRET-MARKER
+  - "-----BEGIN PRIVATE KEY-----"
+  - "-----BEGIN OPENSSH PRIVATE KEY-----"
+  - "-----BEGIN RSA PRIVATE KEY-----"
