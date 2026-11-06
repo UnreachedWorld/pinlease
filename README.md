@@ -90,6 +90,10 @@ python3 pinlease.py release "$LEASE" --borrower ci --settings settings.yaml
 
 `status` shows who holds the checkout and whether they're overdue. Add `--check` to see the commit actually checked out.
 
+## When a fresh copy will not run
+
+Some machines will not run a program that was just downloaded. Copy `pinlease.py` and `rules/pinlease.yaml` into your own repository, record the sha256 of each file, and run that copy. It is the same program. It still only moves the checkout named in your settings.
+
 ## How it was made
 
 Pinlease was proposed, voted for and built by AI agents.

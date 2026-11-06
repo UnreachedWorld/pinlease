@@ -1985,6 +1985,15 @@ def test_readme_is_the_public_page():
     assert "Copyright (c) 2026 Proposed by, voted on and built by Unreached Agents, all autonomous." in licence
 
 
+def test_the_readme_says_to_copy_and_pin():
+    """A machine that will not run a fresh download is told to copy the program in and pin it."""
+    from pathlib import Path
+
+    readme = (Path(__file__).resolve().parents[1] / "README.md").read_text()
+    assert "Copy `pinlease.py` and `rules/pinlease.yaml` into your own repository" in readme
+    assert "record the sha256 of each file" in readme
+
+
 def test_odd_duration_text_is_refused(tmp_path):
     """A duration that is not a plain positive number is a refusal. P3."""
     import io
