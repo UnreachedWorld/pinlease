@@ -2015,3 +2015,57 @@ def test_odd_duration_text_is_refused(tmp_path):
         record = json.loads(record_path.read_text())
         lease = record.get("lease")
         assert lease is None or lease.get("state") != "HELD"
+
+
+def test_home_refuses_a_missing_commit_flag_and_a_stray_word(tmp_path):
+    """A home commit must be --commit. A bare word is refused and not stored."""
+    import io
+    import contextlib
+
+    host = tmp_path / "host"
+    home, other = make_host(host)
+    settings = _settings_file(tmp_path, host)
+    record_path = tmp_path / "lease" / "lease.json"
+
+    def homes():
+        if not record_path.exists():
+            return {}
+        return json.loads(record_path.read_text()).get("homes") or {}
+
+    missing = io.StringIO()
+    with contextlib.redirect_stderr(missing):
+        missing_code = main(["home", "box", "--settings", str(settings)])
+    assert missing_code == 2
+    assert missing.getvalue() == "name the commit (--commit SHA)\n"
+    assert "git refused" not in missing.getvalue()
+    assert git(host, "rev-parse", "HEAD") == home
+    assert "box" not in homes()
+
+    positional = io.StringIO()
+    with contextlib.redirect_stderr(positional):
+        positional_code = main(["home", "box", other, "--settings", str(settings)])
+    assert positional_code == 2
+    assert positional.getvalue() == "name the commit (--commit SHA)\n"
+    assert "git refused" not in positional.getvalue()
+    assert git(host, "rev-parse", "HEAD") == home
+    assert "box" not in homes()
+
+    stray = io.StringIO()
+    with contextlib.redirect_stderr(stray):
+        stray_code = main(
+            ["home", "box", "--commit", other, "extra", "--settings", str(settings)]
+        )
+    assert stray_code == 2
+    assert stray.getvalue() == "a stray argument is refused\n"
+    assert git(host, "rev-parse", "HEAD") == home
+    assert "box" not in homes()
+
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        recorded = main(
+            ["home", "box", "--commit", other, "--settings", str(settings)]
+        )
+    assert recorded == 0
+    assert out.getvalue() == "home recorded\n"
+    assert git(host, "rev-parse", "HEAD") == home
+    assert homes()["box"] == other

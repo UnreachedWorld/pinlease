@@ -910,8 +910,13 @@ def _main(argv):
     if command == "home":
         if not rest or str(rest[0]).startswith("-"):
             raise Refused("name the host")
-        host = rest[0]
+        host = rest.pop(0)
         commit = _take(rest, "--commit")
+        if commit is None:
+            raise Refused("name the commit (--commit SHA)")
+        for word in rest:
+            if not str(word).startswith("-"):
+                raise Refused("a stray argument is refused")
         store = _store_from_settings(settings, host)
         store.set_home(host, commit)
         sys.stdout.write("home recorded\n")
